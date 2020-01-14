@@ -27,7 +27,7 @@ export class PlanetSystem extends Group {
         const sun = new Planet(this, config)
         const light = new PointLight(0xffffff, 1, 100, 2);
         light.position.set(config.pos.x, config.pos.y, config.pos.z);
-        sun.enhanceableGeometry.add(light)
+        sun.add(light)
         this.planets.push(sun);
         
       } else {
