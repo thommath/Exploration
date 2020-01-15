@@ -42,8 +42,6 @@ export class PlanetSystem extends Group {
 
   getRandomPlanetConfig(): {pos: Vector3, size?: number, color?: number, seed?: number, geometry?: Geometry, material?: Material} {
 
-
-
     return {
       pos: new Vector3(Math.random()*this.areaSize-this.areaSize/2, Math.random()*this.areaSize-this.areaSize/2, Math.random()*this.areaSize-this.areaSize/2),
       size: Math.random()*this.planetSize,

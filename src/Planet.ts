@@ -44,8 +44,9 @@ export class Planet extends Mesh{
   update(camera: Camera) {
     const d = camera.position.distanceTo(this.pos);
 
-    const maxDist = 30;
+    const maxDist = 120;
+    const divideBy = 4;
 
-    this.setRes(Math.max(Math.min(Math.floor(maxDist-(d)), maxDist), 1));
+    this.setRes(Math.max(Math.min(Math.floor((maxDist-d)/divideBy), maxDist/divideBy), 1));
   }
 }
