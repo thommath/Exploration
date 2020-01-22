@@ -7,20 +7,17 @@ const randomVector = (p: Vector3): number =>
   simplex.noise3D(p.x, p.y, p.z);
 
 export class Planet extends Mesh{
-  pos: Vector3;
-  color: string;
-  seed: number;
+  config: {pos: Vector3, size?: number, color?: string | number, seed?: number, geometry?: Geometry, material?: Material};
 
   detailLevel: number = 0;
-  size: number = 1;
 
-  constructor(parent: Object3D, { size, pos, color, seed, geometry, material }: {pos: Vector3, size?: number, color?: string | number, seed?: number, geometry?: Geometry, material?: Material}) {
-    super(geometry, material);
+  constructor(parent: Object3D, config: {pos: Vector3, size?: number, color?: string | number, seed?: number, geometry?: Geometry, material?: Material}) {
+    super(config.geometry, config.material);
 
-    [this.pos, this.seed, this.size] = [pos, seed, size];
-    
+    this.config = config;
+
     // Set material
-    this.material = material || new MeshPhongMaterial({ color: color || 0x00ff00 });
+    this.material = config.material || new MeshPhongMaterial({ color: config.color || 0x00ff00 });
     // Set geometry
     this.setRes(1);
 
@@ -28,12 +25,12 @@ export class Planet extends Mesh{
   }
 
   setRes(n: number) {
-    this.geometry = new SphereGeometry(this.size, n, n);
-    this.geometry.translate(this.pos.x, this.pos.y, this.pos.z)
+    this.geometry = new SphereGeometry(this.config.size, n, n);
+    this.geometry.translate(this.config.pos.x, this.config.pos.y, this.config.pos.z)
 
     const geometry = (<Geometry> this.geometry);
     geometry.vertices.map(v => {
-      const norm = v.clone().sub(this.pos).normalize();
+      const norm = v.clone().sub(this.config.pos).normalize();
       v
         .add(norm.multiplyScalar(randomVector(v)).multiplyScalar(0.2))
         .add(norm.multiplyScalar(randomVector(v.clone().multiplyScalar(3))).multiplyScalar(0.3));
@@ -42,7 +39,7 @@ export class Planet extends Mesh{
   }
   
   update(camera: Camera) {
-    const d = camera.position.distanceTo(this.pos);
+    const d = camera.position.distanceTo(this.config.pos);
 
     const maxDist = 120;
     const divideBy = 4;
