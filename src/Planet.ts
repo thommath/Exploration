@@ -24,16 +24,18 @@ export class Planet extends Mesh{
     parent.add(this);
   }
 
-  setRes(n: number) {
-    this.geometry = new SphereGeometry(this.config.size, n, n);
+  setRes(detailLevel: number) {
+    this.geometry = new SphereGeometry(this.config.size, Math.max(16, detailLevel), Math.max(16, detailLevel));
     this.geometry.translate(this.config.pos.x, this.config.pos.y, this.config.pos.z)
 
     const geometry = (<Geometry> this.geometry);
     geometry.vertices.map(v => {
       const norm = v.clone().sub(this.config.pos).normalize();
-      v
-        .add(norm.multiplyScalar(randomVector(v)).multiplyScalar(0.2))
-        .add(norm.multiplyScalar(randomVector(v.clone().multiplyScalar(3))).multiplyScalar(0.3));
+
+      for (let n = 1; n <= this.config.size; n++) {
+        v.add(norm.multiplyScalar(randomVector(v.clone().multiplyScalar(n))).multiplyScalar(1/n))
+      }
+//        .add(norm.multiplyScalar(randomVector(v.clone().multiplyScalar(3))).multiplyScalar(0.3));
     });
 
   }

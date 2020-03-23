@@ -5,7 +5,7 @@ export class PlanetSystem extends Group {
 
 
   areaSize = 150;
-  planetSize = 4;
+  planetSize = 10;
   
   planets: Planet[] = [];
 
@@ -17,7 +17,7 @@ export class PlanetSystem extends Group {
     size: Math.random()*this.planetSize*2,
   }
 
-  constructor(numberOfPlanets: number = 50) {
+  constructor(numberOfPlanets: number = 20) {
     super();
     for(let n = 0; n < numberOfPlanets; n++) {
 

@@ -37,14 +37,44 @@ controls.rollSpeed = Math.PI / 6;
 controls.autoForward = false;
 controls.dragToLook = false;
 
+// Only upadte controls if window is in focus
+
+let isTabActive: boolean = true;
+
+window.onfocus = function () { 
+  isTabActive = true; 
+}; 
+
+window.onblur = function () { 
+  isTabActive = false; 
+}; 
+
+// test
+setInterval(function () { 
+  console.log(isTabActive ? 'active' : 'inactive'); 
+}, 1000);
+
 
 var animate = function () {
   requestAnimationFrame( animate );
 
+  if (!isTabActive) {
+    
+    if (clock.running) {
+      clock.stop();
+    }
+
+    return;
+  } else if (!clock.running) {
+    clock.start();
+  }
+  
   var delta = clock.getDelta();
   //planet.mesh.rotation.x += 0.01;
   //planet.mesh.rotation.y += 0.01;
-
+  
+  
+  
   controls.update( delta );
   planetsystem.update(camera);
 
