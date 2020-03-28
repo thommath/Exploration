@@ -1,10 +1,10 @@
 import { Planet } from './Planet';
-import { Group, Vector3, Material, Geometry, MeshPhongMaterial, Camera, PointLight } from 'three';
+import { Group, Vector3, Material, Geometry, MeshPhongMaterial, Camera, PointLight, MeshDistanceMaterial, MeshDepthMaterial, MeshNormalMaterial } from 'three';
 
 export class PlanetSystem extends Group {
 
 
-  areaSize = 150;
+  areaSize = 15;
   planetSize = 10;
   
   planets: Planet[] = [];
@@ -19,6 +19,17 @@ export class PlanetSystem extends Group {
 
   constructor(numberOfPlanets: number = 20) {
     super();
+
+    this.planets.push(new Planet(this, {
+      material: new MeshNormalMaterial(),
+      size: this.planetSize,
+      pos: new Vector3(0, 0, -this.planetSize*5)
+    }));
+    const light = new PointLight(0xffffff, 1, 100, 2);
+    light.position.set(0, 0, -this.planetSize*5);
+    this.planets[0].add(light)
+    return;
+
     for(let n = 0; n < numberOfPlanets; n++) {
 
       if (Math.random() < 0.2) { // Make a sun
