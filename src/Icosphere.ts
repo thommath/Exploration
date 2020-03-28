@@ -2,13 +2,6 @@ import {
   Geometry,
   Vector3,
   Face3,
-  Object3D,
-  Mesh,
-  Material,
-  MeshBasicMaterial,
-  Camera,
-  SphereGeometry,
-  MeshPhongMaterial,
   Vector2
 } from "three";
 import * as SimplexNoise from "simplex-noise";

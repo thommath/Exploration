@@ -14,6 +14,7 @@ uniform float time;
 uniform vec3 pos;
 uniform float size;
 uniform ColorConfig colorConfig[ColorConfigElements];
+uniform vec3 baseColor;
 
 void main() {
 
@@ -89,7 +90,7 @@ void main() {
         clamp(mountain.color * clamp(mountain.area - pow(normalisedDiff - mountain.offset, 2. * mountain.smoothness), 0., 1.), 0., 1.) +
         clamp(top.color * clamp(top.area - pow(normalisedDiff - top.offset, 2. * top.smoothness), 0., 1.), 0., 1.);
 
-      color = vec3(0.);
+      color = vec3(baseColor) * 0.3;
       for(int i = 0; i < ColorConfigElements; i++) {
         color += 
           clamp(colorConfig[i].color * clamp(colorConfig[i].area - pow(normalisedDiff - colorConfig[i].offset, 2. * colorConfig[i].smoothness), 0., 1.), 0., 1.);

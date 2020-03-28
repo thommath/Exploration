@@ -6,7 +6,7 @@ import { Icosphere, GenerationConfig } from './Icosphere';
 export type PlanetConfig = {
   pos: Vector3;
   size?: number;
-  color?: string | number;
+  color?: Vector3;
   seed?: number;
   geometry?: Geometry;
   material?: Material;
@@ -26,7 +26,7 @@ export class Planet extends Mesh{
     this.config = config;
 
     // Set material
-    this.material = config.material || new MeshPhongMaterial({ color: config.color || 0x00ff00 });
+    this.material = config.material || new MeshPhongMaterial({ color: 0x00ff00 });
     // Set geometry
     this.setRes(1);
 

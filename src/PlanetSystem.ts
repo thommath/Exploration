@@ -75,7 +75,8 @@ export class PlanetSystem extends Group {
       uniforms: {
         pos: { value: config.pos },
         size: { value: config.size },
-        colorConfig: { value: colorPatternConfig }
+        colorConfig: { value: colorPatternConfig },
+        baseColor: { value: config.color },
       },
       vertexShader: this.vShader,
       fragmentShader: this.fShader
@@ -92,7 +93,7 @@ export class PlanetSystem extends Group {
     return {
       pos: new Vector3(Math.random()*this.areaSize-this.areaSize/2, Math.random()*this.areaSize-this.areaSize/2, Math.random()*this.areaSize-this.areaSize/2),
       size: 2+Math.random()*this.planetSize,
-      color: Math.floor(Math.random()*16777215),
+      color: new Vector3(Math.random(),Math.random(),Math.random()),
       generationConfig: this.getRandomGenerationConfig(),
     };
   }
