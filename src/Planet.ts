@@ -56,6 +56,7 @@ export class Planet extends Mesh{
     this.geometry = Icosphere.createGeometry(detailLevel, this.config.pos);
     console.log(this.geometry.vertices)
     console.log(this.geometry.faces)
+
     this.geometry.scale(this.config.size || 1, this.config.size || 1, this.config.size || 1);
     this.geometry.translate(this.config.pos.x, this.config.pos.y, this.config.pos.z)
   }

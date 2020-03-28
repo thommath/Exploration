@@ -1,5 +1,8 @@
 import { Planet } from './Planet';
-import { Group, Vector3, Material, Geometry, MeshPhongMaterial, Camera, PointLight, MeshDistanceMaterial, MeshDepthMaterial, MeshNormalMaterial } from 'three';
+import { Group, Vector3, Material, Geometry, MeshPhongMaterial, Camera, PointLight, MeshDistanceMaterial, MeshDepthMaterial, MeshNormalMaterial, Vector2, ShaderMaterial } from 'three';
+
+import planetVert from 'raw-loader!./shaders/planet.vert';
+import planetFrag from 'raw-loader!./shaders/planet.frag';
 
 export class PlanetSystem extends Group {
 
@@ -20,11 +23,33 @@ export class PlanetSystem extends Group {
   constructor(numberOfPlanets: number = 20) {
     super();
 
+    const vShader = planetVert.substr(16, planetVert.length-20).replace(/\\n/g, "\n");//.replace(/([^a-z0-9A-Z;\.,{}\+\-\*\/ = \[\]_\n()]+)/gi, '');
+    const fShader = planetFrag.substr(16, planetFrag.length-20).replace(/\\n/g, "\n");//.replace(/([^a-z0-9A-Z;\.,{}\+\-\*\/ = \[\]_\n()]+)/gi, '');
+
+    console.log(vShader, fShader);
+
+
+    const pos = new Vector3(0, 0, -this.planetSize*5);
+    const size = this.planetSize;
+
+    const material = new ShaderMaterial( {
+
+      uniforms: {
+        time: { value: 1.0 },
+        pos: { value: pos },
+        size: { value: size },
+      },
+      vertexShader: vShader,
+      fragmentShader: fShader
+    
+    } );
+
     this.planets.push(new Planet(this, {
-      material: new MeshNormalMaterial(),
-      size: this.planetSize,
-      pos: new Vector3(0, 0, -this.planetSize*5)
+      material,
+      pos,
+      size,
     }));
+    
     const light = new PointLight(0xffffff, 1, 100, 2);
     light.position.set(0, 0, -this.planetSize*5);
     this.planets[0].add(light)
