@@ -1,4 +1,6 @@
-varying vec3 vUv;
+uniform vec3 diffuse;
+varying vec3 vPos;
+varying vec3 vNormal;
 
 struct ColorConfig
 {
@@ -16,14 +18,29 @@ uniform float size;
 uniform ColorConfig colorConfig[ColorConfigElements];
 uniform vec3 baseColor;
 
+
+struct PointLight {
+  vec3 position;
+  vec3 color;
+};
+uniform PointLight pointLights[ NUM_POINT_LIGHTS ];
+
 void main() {
 
-  float distanceFromCenter = length(vUv - pos);
+  float distanceFromCenter = length(vPos - pos);
   float diffFromNormal = distanceFromCenter - 2. * size;
 
   float normalisedDiff = diffFromNormal;
   
   vec3 color;
+
+  vec3 addedLights = vec3(0.1, 0.1, 0.1);
+  for(int l = 0; l < NUM_POINT_LIGHTS; l++) {
+    vec3 adjustedLight = pointLights[l].position + cameraPosition;
+    vec3 lightDirection = normalize(vPos - adjustedLight);
+    addedLights += clamp(dot(-lightDirection, vNormal), 0.0, 1.0) * pointLights[l].color;
+  }
+  addedLights = clamp(addedLights, 0., 1.);
 
   if (normalisedDiff < -2.) {
       color = vec3(0.3, 0.3, 8);
@@ -110,6 +127,6 @@ void main() {
 //        color = vec4((vec3(restColor, 0.7, restColor) + vec3(restColor, restColor, restColor) * (+pos.y + 4.5) ) / 2, 1);
   }
 
-  gl_FragColor = vec4( clamp(color, 0., 1.), 1.0 );
+  gl_FragColor = vec4( clamp(color * addedLights, 0., 1.), 1.0 );
 
 }

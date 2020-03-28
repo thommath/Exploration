@@ -1,5 +1,5 @@
 import { Planet, PlanetConfig } from './Planet';
-import { Group, Vector3, Material, Geometry, MeshPhongMaterial, Camera, PointLight, MeshDistanceMaterial, MeshDepthMaterial, MeshNormalMaterial, Vector2, ShaderMaterial } from 'three';
+import { Group, Vector3, MeshPhongMaterial, Camera, PointLight, UniformsLib, ShaderMaterial } from 'three';
 import { GenerationConfig } from './Icosphere';
 
 import planetVert from 'raw-loader!./shaders/planet.vert';
@@ -77,9 +77,11 @@ export class PlanetSystem extends Group {
         size: { value: config.size },
         colorConfig: { value: colorPatternConfig },
         baseColor: { value: config.color },
+        ...UniformsLib['lights'],
       },
       vertexShader: this.vShader,
-      fragmentShader: this.fShader
+      fragmentShader: this.fShader,
+      lights: true,
     });
 
     return new Planet(this, {
