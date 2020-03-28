@@ -2,19 +2,25 @@ import { Geometry, Vector3, Face3, Object3D, Mesh, Material, MeshBasicMaterial, 
 import * as SimplexNoise from 'simplex-noise';
 import { Icosphere, GenerationConfig } from './Icosphere';
 
-const simplex = new SimplexNoise('heya');
 
-const randomVector = (p: Vector3): number => 
-  simplex.noise3D(p.x, p.y, p.z);
+export type PlanetConfig = {
+  pos: Vector3;
+  size?: number;
+  color?: string | number;
+  seed?: number;
+  geometry?: Geometry;
+  material?: Material;
+  generationConfig: GenerationConfig;
+};
 
 export class Planet extends Mesh{
-  config: {pos: Vector3, size?: number, color?: string | number, seed?: number, geometry?: Geometry, material?: Material, generationConfig: GenerationConfig};
+  config: PlanetConfig;
 
   detailLevel: number = 0;
 
   lastRes: number = 0;
 
-  constructor(parent: Object3D, config: {pos: Vector3, size?: number, color?: string | number, seed?: number, geometry?: Geometry, material?: Material, generationConfig: GenerationConfig}) {
+  constructor(parent: Object3D, config: PlanetConfig) {
     super(config.geometry, config.material);
 
     this.config = config;

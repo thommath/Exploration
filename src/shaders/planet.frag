@@ -1,10 +1,5 @@
 varying vec3 vUv;
 
-uniform float time;
-uniform vec3 pos;
-uniform float size;
-
-
 struct ColorConfig
 {
   vec3 color;
@@ -12,6 +7,13 @@ struct ColorConfig
   float offset;
   float smoothness;
 };
+
+const int ColorConfigElements = 5;
+
+uniform float time;
+uniform vec3 pos;
+uniform float size;
+uniform ColorConfig colorConfig[ColorConfigElements];
 
 void main() {
 
@@ -86,6 +88,12 @@ void main() {
         clamp(grass.color * clamp(grass.area - pow(normalisedDiff - grass.offset, 2. * grass.smoothness), 0., 1.), 0., 1.) +
         clamp(mountain.color * clamp(mountain.area - pow(normalisedDiff - mountain.offset, 2. * mountain.smoothness), 0., 1.), 0., 1.) +
         clamp(top.color * clamp(top.area - pow(normalisedDiff - top.offset, 2. * top.smoothness), 0., 1.), 0., 1.);
+
+      color = vec3(0.);
+      for(int i = 0; i < ColorConfigElements; i++) {
+        color += 
+          clamp(colorConfig[i].color * clamp(colorConfig[i].area - pow(normalisedDiff - colorConfig[i].offset, 2. * colorConfig[i].smoothness), 0., 1.), 0., 1.);
+      }
 
     /*
       color = // Color * max(0, -pow(( y + heightPos) * howWide, 2) + 1)

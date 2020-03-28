@@ -1,9 +1,17 @@
-import { Planet } from './Planet';
+import { Planet, PlanetConfig } from './Planet';
 import { Group, Vector3, Material, Geometry, MeshPhongMaterial, Camera, PointLight, MeshDistanceMaterial, MeshDepthMaterial, MeshNormalMaterial, Vector2, ShaderMaterial } from 'three';
 import { GenerationConfig } from './Icosphere';
 
 import planetVert from 'raw-loader!./shaders/planet.vert';
 import planetFrag from 'raw-loader!./shaders/planet.frag';
+
+type ColorMaterialConfig = {
+  color: Vector3;
+  area: number;
+  offset: number;
+  smoothness: number;
+}
+
 
 export class PlanetSystem extends Group {
 
@@ -33,12 +41,17 @@ export class PlanetSystem extends Group {
     const pos = new Vector3(0, 0, -this.planetSize*5);
     const size = this.planetSize;
 
-    const material = new ShaderMaterial( {
+    let colorPatternConfig: (ColorMaterialConfig | 0)[] = [];
+    colorPatternConfig.length = 5;
+    colorPatternConfig.fill(0);
+    colorPatternConfig = colorPatternConfig.map(this.getRandomColorConfig)
+    console.log(colorPatternConfig);
 
+    const material = new ShaderMaterial( {
       uniforms: {
-        time: { value: 1.0 },
         pos: { value: pos },
         size: { value: size },
+        colorConfig: { value: colorPatternConfig }
       },
       vertexShader: vShader,
       fragmentShader: fShader
@@ -78,7 +91,7 @@ export class PlanetSystem extends Group {
     this.planets.forEach(p => p.update(camera));
   }
 
-  getRandomPlanetConfig(): {pos: Vector3, size?: number, color?: number, seed?: number, geometry?: Geometry, material?: Material, generationConfig: GenerationConfig} {
+  getRandomPlanetConfig(): PlanetConfig {
 
     return {
       pos: new Vector3(Math.random()*this.areaSize-this.areaSize/2, Math.random()*this.areaSize-this.areaSize/2, Math.random()*this.areaSize-this.areaSize/2),
@@ -93,6 +106,15 @@ export class PlanetSystem extends Group {
       amplitudeMultiplier: Math.random() * 3,
       numberOfIterations: Math.round(Math.random() * 15),
       noisemultiplier: Math.random() * 3,
+    }
+  }
+
+  getRandomColorConfig(): ColorMaterialConfig {
+    return {
+      area: 1 + Math.random() * 10,
+      color: new Vector3(Math.random(),Math.random(),Math.random()),
+      offset: Math.random()*10 - 5,
+      smoothness: 0.5 + Math.random(),
     }
   }
 }
