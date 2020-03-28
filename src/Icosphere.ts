@@ -11,37 +11,61 @@ import {
   MeshPhongMaterial,
   Vector2
 } from "three";
-import * as SimplexNoise from 'simplex-noise';
+import * as SimplexNoise from "simplex-noise";
 
-const simplex = new SimplexNoise('heya');
+const simplex = new SimplexNoise("heya");
 
-const randomVector = (p: Vector3): number => 
-  simplex.noise3D(startSeed + p.x * noise, startSeed + p.y * noise, startSeed + p.z * noise);
+const randomVector = (p: Vector3): number =>
+  simplex.noise3D(
+    startSeed + p.x * noise,
+    startSeed + p.y * noise,
+    startSeed + p.z * noise
+  );
 
-const randomNumber = (p: Vector2): number => 
+const randomNumber = (p: Vector2): number =>
   simplex.noise2D(startSeed + p.x * noise, startSeed + p.y * noise);
 
 const startSeed = 20;
 const noise = 1;
 
+export type GenerationConfig = {
+  numberOfIterations: number;
+  amplitudeMultiplier: number;
+  noisemultiplier: number;
+};
+
 export class Icosphere {
-
-
-  static calculateNoisedPosition(pos: Vector3, startSeed: Vector3 = new Vector3(0, 0, 0)): Vector3 {
-    const randomZeroToOne = (1 + randomVector(pos))/2;
+  static calculateNoisedPosition(
+    pos: Vector3,
+    startSeed: Vector3 = new Vector3(0, 0, 0),
+    generationConfiguration: GenerationConfig
+  ): Vector3 {
+    const randomZeroToOne = (1 + randomVector(pos)) / 2;
     const newPos = pos.clone();
     //newPos.divideScalar((newPos.length() / 1.9));
-    
-    for (let i = 0; i < 10; i++) {
-      const randomOnePlusMinusALittle = 1 + randomVector(startSeed.clone().add(newPos).multiplyScalar(i+1)) * (.1 / Math.pow(i+1, 1.2));
+
+    for (let i = 0; i < generationConfiguration.numberOfIterations; i++) {
+      const randomOnePlusMinusALittle =
+        1 +
+        randomVector(
+          startSeed
+            .clone()
+            .add(newPos)
+            .multiplyScalar((i + 1) * generationConfiguration.noisemultiplier)
+        ) *
+          (0.1 / Math.pow(i + 1, 1.2)) *
+          generationConfiguration.amplitudeMultiplier;
       //const randomOnePlusMinusALittle = 1 + randomVector(startSeed.clone().add(newVertex)) * 0.1;
       newPos.multiplyScalar(randomOnePlusMinusALittle);
     }
     return newPos;
-
   }
 
-  static createGeometry(recursionLevel: number = 1, startSeed: Vector3 = new Vector3(0, 0, 0)): Geometry {
+  static createGeometry(
+    recursionLevel: number = 1,
+    startSeed: Vector3 = new Vector3(0, 0, 0),
+    generationConfiguration: GenerationConfig
+  ): Geometry {
     // http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
     const geometry = new Geometry();
 
@@ -63,7 +87,7 @@ export class Icosphere {
       new Vector3(t, 0, 1),
       new Vector3(-t, 0, -1),
       new Vector3(-t, 0, 1)
-    ].map(p => Icosphere.calculateNoisedPosition(p, startSeed));
+    ].map(p => Icosphere.calculateNoisedPosition(p, startSeed, generationConfiguration));
 
     let indices: Face3[] = [
       new Face3(0, 11, 5),
@@ -94,9 +118,12 @@ export class Icosphere {
     const pointCache: any = {};
 
     const logging: any = {};
-    
 
-    const getMiddlePointIndex = (i1: number, i2: number, recursionIndex: number) => {
+    const getMiddlePointIndex = (
+      i1: number,
+      i2: number,
+      recursionIndex: number
+    ) => {
       // Check the cache
 
       // Key with higher number first
@@ -105,12 +132,15 @@ export class Icosphere {
       // If not cached
       if (!pointCache[key]) {
         // Create a new verticy in the middle between the two points
-        const newVertex = vertices[i1].clone().add(vertices[i2]).divideScalar(2);
+        const newVertex = vertices[i1]
+          .clone()
+          .add(vertices[i2])
+          .divideScalar(2);
 
-        newVertex.divideScalar((newVertex.length() / 1.9));
-              
+        newVertex.divideScalar(newVertex.length() / 1.9);
+
         const newLength = vertices.push(
-          Icosphere.calculateNoisedPosition(newVertex, startSeed)
+          Icosphere.calculateNoisedPosition(newVertex, startSeed, generationConfiguration)
         );
         // Map the key to the newly added index
         pointCache[key] = newLength - 1;

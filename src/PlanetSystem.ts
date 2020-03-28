@@ -1,5 +1,6 @@
 import { Planet } from './Planet';
 import { Group, Vector3, Material, Geometry, MeshPhongMaterial, Camera, PointLight, MeshDistanceMaterial, MeshDepthMaterial, MeshNormalMaterial, Vector2, ShaderMaterial } from 'three';
+import { GenerationConfig } from './Icosphere';
 
 import planetVert from 'raw-loader!./shaders/planet.vert';
 import planetFrag from 'raw-loader!./shaders/planet.frag';
@@ -48,8 +49,9 @@ export class PlanetSystem extends Group {
       material,
       pos,
       size,
+      generationConfig: this.getRandomGenerationConfig()
     }));
-    
+
     const light = new PointLight(0xffffff, 1, 100, 2);
     light.position.set(0, 0, -this.planetSize*5);
     this.planets[0].add(light)
@@ -76,12 +78,21 @@ export class PlanetSystem extends Group {
     this.planets.forEach(p => p.update(camera));
   }
 
-  getRandomPlanetConfig(): {pos: Vector3, size?: number, color?: number, seed?: number, geometry?: Geometry, material?: Material} {
+  getRandomPlanetConfig(): {pos: Vector3, size?: number, color?: number, seed?: number, geometry?: Geometry, material?: Material, generationConfig: GenerationConfig} {
 
     return {
       pos: new Vector3(Math.random()*this.areaSize-this.areaSize/2, Math.random()*this.areaSize-this.areaSize/2, Math.random()*this.areaSize-this.areaSize/2),
       size: Math.random()*this.planetSize,
       color: Math.floor(Math.random()*16777215),
+      generationConfig: this.getRandomGenerationConfig(),
     };
+  }
+
+  getRandomGenerationConfig(): GenerationConfig {
+    return {
+      amplitudeMultiplier: Math.random() * 3,
+      numberOfIterations: Math.round(Math.random() * 15),
+      noisemultiplier: Math.random() * 3,
+    }
   }
 }

@@ -1,6 +1,6 @@
 import { Geometry, Vector3, Face3, Object3D, Mesh, Material, MeshBasicMaterial, Camera, SphereGeometry, MeshPhongMaterial } from "three";
 import * as SimplexNoise from 'simplex-noise';
-import { Icosphere } from './Icosphere';
+import { Icosphere, GenerationConfig } from './Icosphere';
 
 const simplex = new SimplexNoise('heya');
 
@@ -8,13 +8,13 @@ const randomVector = (p: Vector3): number =>
   simplex.noise3D(p.x, p.y, p.z);
 
 export class Planet extends Mesh{
-  config: {pos: Vector3, size?: number, color?: string | number, seed?: number, geometry?: Geometry, material?: Material};
+  config: {pos: Vector3, size?: number, color?: string | number, seed?: number, geometry?: Geometry, material?: Material, generationConfig: GenerationConfig};
 
   detailLevel: number = 0;
 
   lastRes: number = 0;
 
-  constructor(parent: Object3D, config: {pos: Vector3, size?: number, color?: string | number, seed?: number, geometry?: Geometry, material?: Material}) {
+  constructor(parent: Object3D, config: {pos: Vector3, size?: number, color?: string | number, seed?: number, geometry?: Geometry, material?: Material, generationConfig: GenerationConfig}) {
     super(config.geometry, config.material);
 
     this.config = config;
@@ -53,7 +53,7 @@ export class Planet extends Mesh{
     });
     this.geometry = new SphereGeometry(1, Math.max(16, detailLevel), Math.max(16, detailLevel));
     */
-    this.geometry = Icosphere.createGeometry(detailLevel, this.config.pos);
+    this.geometry = Icosphere.createGeometry(detailLevel, this.config.pos, this.config.generationConfig);
     console.log(this.geometry.vertices)
     console.log(this.geometry.faces)
 
