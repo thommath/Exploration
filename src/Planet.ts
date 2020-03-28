@@ -44,6 +44,7 @@ export class Planet extends Mesh{
     } else {
       this.lastRes = detailLevel;
     }
+    console.log('New res!', detailLevel);
     /*
     this.geometry = new SphereGeometry(this.config.size, Math.max(16, detailLevel), Math.max(16, detailLevel));
     this.geometry.translate(this.config.pos.x, this.config.pos.y, this.config.pos.z)
@@ -60,19 +61,47 @@ export class Planet extends Mesh{
     this.geometry = new SphereGeometry(1, Math.max(16, detailLevel), Math.max(16, detailLevel));
     */
     this.geometry = Icosphere.createGeometry(detailLevel, this.config.pos, this.config.generationConfig);
-    console.log(this.geometry.vertices)
-    console.log(this.geometry.faces)
 
     this.geometry.scale(this.config.size || 1, this.config.size || 1, this.config.size || 1);
     this.geometry.translate(this.config.pos.x, this.config.pos.y, this.config.pos.z)
   }
   
   update(camera: Camera) {
-    const d = camera.position.distanceTo(this.config.pos);
+    const d = camera.position.distanceTo(this.config.pos) - this.config.size;
 
     const maxDist = 120;
     const divideBy = 4;
 
-    //this.setRes(Math.max(Math.min(Math.floor((maxDist-d)/divideBy), maxDist/divideBy), 1));
+    const maxDetailLevel = 5;
+
+    /*
+      Let's do some math again
+
+      We have a distance d to the planet's core
+
+      when we are far away we want no details, = 1
+      when we are close we want lot's of details, = 7
+
+      Sooo let's try linear approach
+
+      y = - x*dx + 7
+
+      when x = 0 we are at 7
+      and when x grows y is lower
+
+      when dx is bigger it is steeper and y goes negative quicker, which means less planets with good resolution
+    */
+
+    /**
+     
+      Did not work well, let's try exponential
+
+     */
+    const dx = 0.001;
+    const y = - Math.pow(d, 2) * dx + maxDetailLevel;
+
+    const res = Math.round(Math.max(Math.min(y,  maxDetailLevel), 1));
+    this.setRes(res);
+    //    this.setRes(Math.max(Math.min(Math.floor((maxDist-d)/divideBy), maxDist/divideBy), 1));
   }
 }
