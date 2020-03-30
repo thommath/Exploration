@@ -1,4 +1,4 @@
-import {Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Clock, MeshPhongMaterial, DirectionalLight, MeshDepthMaterial } from 'three';
+import {Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Clock, MeshPhongMaterial, DirectionalLight, MeshDepthMaterial, ShaderLib } from 'three';
 import { PlanetSystem } from './PlanetSystem';
 import { FlyControls } from './FlyControls';
 
@@ -11,6 +11,8 @@ document.body.appendChild( renderer.domElement );
 
 //var directionalLight = new DirectionalLight( 0xffffff, 0.5 );
 //scene.add( directionalLight )
+
+console.log(ShaderLib.phong.vertexShader)
 
 const planetsystem = new PlanetSystem();
 

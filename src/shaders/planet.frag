@@ -1,6 +1,34 @@
+#define PHONG
 uniform vec3 diffuse;
-varying vec3 vPos;
-varying vec3 vNormal;
+uniform vec3 emissive;
+uniform vec3 specular;
+uniform float shininess;
+uniform float opacity;
+#include <common>
+#include <packing>
+#include <dithering_pars_fragment>
+#include <color_pars_fragment>
+#include <uv_pars_fragment>
+#include <uv2_pars_fragment>
+#include <map_pars_fragment>
+#include <alphamap_pars_fragment>
+#include <aomap_pars_fragment>
+#include <lightmap_pars_fragment>
+#include <emissivemap_pars_fragment>
+#include <envmap_common_pars_fragment>
+#include <envmap_pars_fragment>
+#include <cube_uv_reflection_fragment>
+#include <fog_pars_fragment>
+#include <bsdfs>
+#include <lights_pars_begin>
+#include <lights_phong_pars_fragment>
+#include <shadowmap_pars_fragment>
+#include <bumpmap_pars_fragment>
+#include <normalmap_pars_fragment>
+#include <specularmap_pars_fragment>
+#include <logdepthbuf_pars_fragment>
+#include <clipping_planes_pars_fragment>
+
 
 struct ColorConfig
 {
@@ -12,121 +40,62 @@ struct ColorConfig
 
 const int ColorConfigElements = 5;
 
-uniform float time;
-uniform vec3 pos;
-uniform float size;
 uniform ColorConfig colorConfig[ColorConfigElements];
 uniform vec3 baseColor;
+uniform vec3 pos;
+uniform float size;
+varying vec3 vPos;
 
-
-struct PointLight {
-  vec3 position;
-  vec3 color;
-};
-uniform PointLight pointLights[ NUM_POINT_LIGHTS ];
-
-void main() {
+vec3 getColor() {
 
   float distanceFromCenter = length(vPos - pos);
   float diffFromNormal = distanceFromCenter - 2. * size;
 
   float normalisedDiff = diffFromNormal;
-  
+
   vec3 color;
 
-  vec3 addedLights = vec3(0.1, 0.1, 0.1);
-  for(int l = 0; l < NUM_POINT_LIGHTS; l++) {
-    vec3 adjustedLight = pointLights[l].position + cameraPosition;
-    vec3 lightDirection = normalize(vPos - adjustedLight);
-    addedLights += clamp(dot(-lightDirection, vNormal), 0.0, 1.0) * pointLights[l].color;
+  color = vec3(baseColor) * 0.3;
+  for(int i = 0; i < ColorConfigElements; i++) {
+    color += 
+      clamp(colorConfig[i].color * clamp(colorConfig[i].area - pow(normalisedDiff - colorConfig[i].offset, 2. * colorConfig[i].smoothness), 0., 1.), 0., 1.);
   }
-  addedLights = clamp(addedLights, 0., 1.);
-
-  if (normalisedDiff < -2.) {
-      color = vec3(0.3, 0.3, 8);
-  } else {
+  
+  return clamp(color, 0., 1.);
+}
 
 
-      /** How to calculate color
 
-        We start with a curve, 1-x^2
-        This has the highest value at 0 where the value is 1
-        It's value is decreasing slowly on both sides
-        If we set red to be this value it is red at x=0 and slowly decreasing on both sides. 
-        By combining these values with colors we can get some smooth colors that change depending on x
+void main() {
+  #include <clipping_planes_fragment>
 
-        We use x = difference from a normal sphere with size = size. 
+  vec4 diffuseColor = vec4( diffuse, opacity );
+  ReflectedLight reflectedLight = ReflectedLight( vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ), vec3( 0.0 ) );
+  vec3 totalEmissiveRadiance = emissive;
+  #include <logdepthbuf_fragment>
+  #include <map_fragment>
+  #include <color_fragment>
+  #include <alphamap_fragment>
+  #include <alphatest_fragment>
+  #include <specularmap_fragment>
+  #include <normal_fragment_begin>
+  #include <normal_fragment_maps>
+  #include <emissivemap_fragment>
+  #include <lights_phong_fragment>
+  #include <lights_fragment_begin>
+  #include <lights_fragment_maps>
+  #include <lights_fragment_end>
+  #include <aomap_fragment>
+  vec3 outgoingLight = vec3(0., 0.5, 1.0) + reflectedLight.directDiffuse + reflectedLight.indirectDiffuse + reflectedLight.directSpecular + reflectedLight.indirectSpecular + totalEmissiveRadiance;
+  #include <envmap_fragment>
 
-        Let's increase the complexity a bit and add more parameters
+  vec3 color = getColor();
 
-        area - (x - offset)^(2 * smoothness)
+  gl_FragColor = vec4( color * outgoingLight, diffuseColor.a );
 
-        area is default 1, the higher this value is the more values of x is 1 or more, basically more color
-        offset is where this color is at it's peak, where it's value is the highest
-        smoothness is how slow the value decays, <0.5, 10> is okay values. The lower, the more smooth are the ends
-
-      */
-
-      vec3 beachLevel = vec3(0.6, 0.6, 0.4);
-
-      vec3 grassLevel = vec3(0, 0.7, 0);
-
-      vec3 mountainLevel = vec3(0.4, 0.4, 0.4);
-
-      vec3 topLevel = vec3(0.9, 0.9, 0.9);
-
-      ColorConfig beach = ColorConfig(
-        vec3(0.6, 0.6, 0.4),
-        1.,
-        -2.,
-        0.4
-      );
-      ColorConfig grass = ColorConfig(
-        vec3(0, 0.7, 0),
-        1.3,
-        -1.,
-        1.
-      );
-      ColorConfig mountain = ColorConfig(
-        vec3(0.4, 0.4, 0.4),
-        1.6,
-        0.,
-        1.
-      );
-      ColorConfig top = ColorConfig(
-        vec3(0.9, 0.9, 0.9),
-        7.6,
-        3.5,
-        1.
-      );
-
-
-      color = 
-        clamp(beach.color * clamp(beach.area - pow(normalisedDiff - beach.offset, 2. * beach.smoothness), 0., 1.), 0., 1.) + 
-        clamp(grass.color * clamp(grass.area - pow(normalisedDiff - grass.offset, 2. * grass.smoothness), 0., 1.), 0., 1.) +
-        clamp(mountain.color * clamp(mountain.area - pow(normalisedDiff - mountain.offset, 2. * mountain.smoothness), 0., 1.), 0., 1.) +
-        clamp(top.color * clamp(top.area - pow(normalisedDiff - top.offset, 2. * top.smoothness), 0., 1.), 0., 1.);
-
-      color = vec3(baseColor) * 0.3;
-      for(int i = 0; i < ColorConfigElements; i++) {
-        color += 
-          clamp(colorConfig[i].color * clamp(colorConfig[i].area - pow(normalisedDiff - colorConfig[i].offset, 2. * colorConfig[i].smoothness), 0., 1.), 0., 1.);
-      }
-
-    /*
-      color = // Color * max(0, -pow(( y + heightPos) * howWide, 2) + 1)
-          
-          beachLevel * clamp( pow((normalisedDiff + 5.5)*2., 2.), 0., 1. ) +
-          
-          grassLevel * clamp( pow((normalisedDiff + 5.5)*2., 2.), 0., 1. ) +
-
-          mountainLevel * clamp( pow((normalisedDiff + 5.5)*2., 2.), 0., 1. );
-*/
-      // * restColor, // Lighter the higher up you are
-
-//        color = vec4((vec3(restColor, 0.7, restColor) + vec3(restColor, restColor, restColor) * (+pos.y + 4.5) ) / 2, 1);
-  }
-
-  gl_FragColor = vec4( clamp(color * addedLights, 0., 1.), 1.0 );
-
+  #include <tonemapping_fragment>
+  #include <encodings_fragment>
+  #include <fog_fragment>
+  #include <premultiplied_alpha_fragment>
+  #include <dithering_fragment>
 }

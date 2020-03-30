@@ -1,5 +1,5 @@
 import { Planet, PlanetConfig } from './Planet';
-import { Group, Vector3, MeshPhongMaterial, Camera, PointLight, UniformsLib, ShaderMaterial } from 'three';
+import { Group, Vector3, MeshPhongMaterial, Camera, PointLight, UniformsLib, ShaderMaterial, ShaderLib } from 'three';
 import { GenerationConfig } from './Icosphere';
 
 import planetVert from 'raw-loader!./shaders/planet.vert';
@@ -44,7 +44,7 @@ export class PlanetSystem extends Group {
 
         const config = {...this.getRandomPlanetConfig(), ...this.sunConfig };
         const sun = new Planet(this, config)
-        const light = new PointLight(0xffffff, 1, 100, 2);
+        const light = new PointLight(0xffffff, 1, 200, 1);
         light.position.set(config.pos.x, config.pos.y, config.pos.z);
         sun.add(light)
         this.planets.push(sun);
@@ -78,11 +78,12 @@ export class PlanetSystem extends Group {
         colorConfig: { value: colorPatternConfig },
         baseColor: { value: config.color },
         ...UniformsLib['lights'],
+        ...ShaderLib.phong.uniforms,
       },
       vertexShader: this.vShader,
       fragmentShader: this.fShader,
       lights: true,
-    });
+    } as any);
 
     return new Planet(this, {
       material,
