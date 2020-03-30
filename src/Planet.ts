@@ -97,7 +97,7 @@ export class Planet extends Mesh{
       Did not work well, let's try exponential
 
      */
-    const dx = 0.001;
+    const dx = 0.0001;
     const y = - Math.pow(d, 2) * dx + maxDetailLevel;
 
     const res = Math.round(Math.max(Math.min(y,  maxDetailLevel), 1));
