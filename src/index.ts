@@ -12,8 +12,6 @@ document.body.appendChild( renderer.domElement );
 //var directionalLight = new DirectionalLight( 0xffffff, 0.5 );
 //scene.add( directionalLight )
 
-console.log(ShaderLib.phong.vertexShader)
-
 const planetsystem = new PlanetSystem();
 
 scene.add(planetsystem);

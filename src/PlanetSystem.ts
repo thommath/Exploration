@@ -111,10 +111,10 @@ export class PlanetSystem extends Group {
 
   getRandomColorConfig(): ColorMaterialConfig {
     return {
-      area: 1 + Math.random() * 10,
+      area: 1 + Math.random() * 20,
       color: new Vector3(Math.random(),Math.random(),Math.random()),
       offset: Math.random()*10 - 5,
-      smoothness: 0.5 + Math.random(),
+      smoothness: .5 + Math.random()*0.01,
     }
   }
 }
