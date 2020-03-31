@@ -1,4 +1,4 @@
-import {Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, MeshBasicMaterial, Mesh, Vector3, Clock, MeshPhongMaterial, DirectionalLight, MeshDepthMaterial, ShaderLib } from 'three';
+import {Scene, PerspectiveCamera, WebGLRenderer, Clock } from 'three';
 import { PlanetSystem } from './PlanetSystem';
 import { FlyControls } from './FlyControls';
 
@@ -9,18 +9,14 @@ var renderer = new WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-//var directionalLight = new DirectionalLight( 0xffffff, 0.5 );
-//scene.add( directionalLight )
-
+// Initialize a planet system
 const planetsystem = new PlanetSystem();
 
 scene.add(planetsystem);
 
 camera.position.z = 3;
 
-var clock = new Clock();
-
-let res = 1;
+const clock = new Clock();
 
 const keysPressed: any = {};
 window.addEventListener('keydown', (event) => {
@@ -30,6 +26,9 @@ window.addEventListener('keyup', (event) => {
   keysPressed[event.key] = false;
 });
 
+/**
+ * Add some controls copied from the internet (sorce in the file)
+ */
 const controls = new FlyControls( camera, renderer.domElement );
 controls.movementSpeed = 10;
 controls.domElement = renderer.domElement;
@@ -37,8 +36,8 @@ controls.rollSpeed = Math.PI / 6;
 controls.autoForward = false;
 controls.dragToLook = false;
 
-// Only upadte controls if window is in focus
 
+// Only upadte if window is in focus
 let isTabActive: boolean = true;
 
 window.onfocus = function () { 
@@ -49,15 +48,11 @@ window.onblur = function () {
   isTabActive = false; 
 }; 
 
-// test
-setInterval(function () { 
-  console.log(isTabActive ? 'active' : 'inactive'); 
-}, 1000);
-
-
+// Update function
 var animate = function () {
   requestAnimationFrame( animate );
 
+// Only upadte if window is in focus
   if (!isTabActive) {
     
     if (clock.running) {
@@ -70,10 +65,6 @@ var animate = function () {
   }
   
   var delta = clock.getDelta();
-  //planet.mesh.rotation.x += 0.01;
-  //planet.mesh.rotation.y += 0.01;
-  
-  
   
   controls.update( delta );
   planetsystem.update(camera);

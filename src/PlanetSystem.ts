@@ -12,10 +12,9 @@ type ColorMaterialConfig = {
   smoothness: number;
 }
 
-
 export class PlanetSystem extends Group {
 
-
+  // Config
   areaSize = 200;
   planetSize = 10;
   
@@ -24,22 +23,21 @@ export class PlanetSystem extends Group {
   material = new MeshPhongMaterial( { color: 0x00ff0a } );
   sunMaterial = new MeshPhongMaterial( { color: 0xffa000, emissive: 0xff0000, emissiveIntensity: 1 } );
 
+  // Default sun config
   sunConfig = {
     material: this.sunMaterial,
     size: Math.random()*this.planetSize*2,
   }
-  vShader = planetVert.substr(16, planetVert.length-20).replace(/\\n/g, "\n");//.replace(/([^a-z0-9A-Z;\.,{}\+\-\*\/ = \[\]_\n()]+)/gi, '');
-  fShader = planetFrag.substr(16, planetFrag.length-20).replace(/\\n/g, "\n");//.replace(/([^a-z0-9A-Z;\.,{}\+\-\*\/ = \[\]_\n()]+)/gi, '');
+
+  // Shaders modified because of raw-loader from webpack combined with typescript 
+  vShader = planetVert.substr(16, planetVert.length-20).replace(/\\n/g, "\n").replace(/\\r/g, "\n");
+  fShader = planetFrag.substr(16, planetFrag.length-20).replace(/\\n/g, "\n").replace(/\\r/g, "\n");
 
   constructor(numberOfPlanets: number = 20) {
     super();
 
-/*    const light = new PointLight(0xffffff, 1, 100, 2);
-    light.position.set(0, 0, -this.planetSize*5);
-    this.planets[0].add(light)
-*/
     for(let n = 0; n < numberOfPlanets; n++) {
-
+      // A small chanse for making a sun
       if (Math.random() < 0.2) { // Make a sun
 
         const config = {...this.getRandomPlanetConfig(), ...this.sunConfig };
@@ -55,15 +53,16 @@ export class PlanetSystem extends Group {
     }
   }
 
+  /**
+   * Update all children
+   * @param camera 
+   */
   update(camera: Camera) {
     this.planets.forEach(p => p.update(camera));
   }
 
 
   getRandomPlanet(): Planet {
-//    const pos = new Vector3(0, 0, -this.planetSize*5);
-//    const size = this.planetSize;
-//
     const config = this.getRandomPlanetConfig();
 
     let colorPatternConfig: (ColorMaterialConfig | 0)[] = [];
@@ -92,7 +91,6 @@ export class PlanetSystem extends Group {
   }
 
   getRandomPlanetConfig(): PlanetConfig {
-
     return {
       pos: new Vector3(Math.random()*this.areaSize-this.areaSize/2, Math.random()*this.areaSize-this.areaSize/2, Math.random()*this.areaSize-this.areaSize/2),
       size: 2+Math.random()*this.planetSize,
@@ -106,6 +104,8 @@ export class PlanetSystem extends Group {
       amplitudeMultiplier: Math.random() * 3,
       numberOfIterations: Math.round(Math.random() * 15),
       noisemultiplier: Math.random() * 3,
+      amplitudeChangeForEachLayer: Math.random() * 3,
+      noiseChangeForEachLayer: Math.random() * 6,
     }
   }
 

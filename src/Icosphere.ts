@@ -1,9 +1,4 @@
-import {
-  Geometry,
-  Vector3,
-  Face3,
-  Vector2
-} from "three";
+import { Geometry, Vector3, Face3 } from "three";
 import * as SimplexNoise from "simplex-noise";
 
 const simplex = new SimplexNoise("heya");
@@ -15,9 +10,7 @@ const randomVector = (p: Vector3): number =>
     startSeed + p.z * noise
   );
 
-const randomNumber = (p: Vector2): number =>
-  simplex.noise2D(startSeed + p.x * noise, startSeed + p.y * noise);
-
+// Config for randomized simplex noise
 const startSeed = 20;
 const noise = 1;
 
@@ -25,6 +18,8 @@ export type GenerationConfig = {
   numberOfIterations: number;
   amplitudeMultiplier: number;
   noisemultiplier: number;
+  amplitudeChangeForEachLayer: number;
+  noiseChangeForEachLayer: number;
 };
 
 export class Icosphere {
@@ -33,22 +28,27 @@ export class Icosphere {
     startSeed: Vector3 = new Vector3(0, 0, 0),
     generationConfiguration: GenerationConfig
   ): Vector3 {
-    const randomZeroToOne = (1 + randomVector(pos)) / 2;
     const newPos = pos.clone();
-    //newPos.divideScalar((newPos.length() / 1.9));
 
+    // Add layers of noise to the position
     for (let i = 0; i < generationConfiguration.numberOfIterations; i++) {
+      /**
+       * Generate noise from the generation configuration
+       *
+       * randomVector returns a number between -1 and 1 so adding 1 to it gives a number between 0 and 2 that can be used as height multiplier for the position vector
+       *
+       */
       const randomOnePlusMinusALittle =
         1 +
         randomVector(
           startSeed
             .clone()
             .add(newPos)
-            .multiplyScalar((i + 1) * generationConfiguration.noisemultiplier)
+            .multiplyScalar((i * generationConfiguration.noiseChangeForEachLayer + 1) * generationConfiguration.noisemultiplier)
         ) *
-          (0.1 / Math.pow(i + 1, 1.2)) *
+          (0.1 / Math.pow(generationConfiguration.amplitudeChangeForEachLayer * i + 1, 1.5)) *
           generationConfiguration.amplitudeMultiplier;
-      //const randomOnePlusMinusALittle = 1 + randomVector(startSeed.clone().add(newVertex)) * 0.1;
+
       newPos.multiplyScalar(randomOnePlusMinusALittle);
     }
     return newPos;
@@ -80,7 +80,9 @@ export class Icosphere {
       new Vector3(t, 0, 1),
       new Vector3(-t, 0, -1),
       new Vector3(-t, 0, 1)
-    ].map(p => Icosphere.calculateNoisedPosition(p, startSeed, generationConfiguration));
+    ].map(p =>
+      Icosphere.calculateNoisedPosition(p, startSeed, generationConfiguration)
+    );
 
     let indices: Face3[] = [
       new Face3(0, 11, 5),
@@ -114,11 +116,8 @@ export class Icosphere {
 
     const getMiddlePointIndex = (
       i1: number,
-      i2: number,
-      recursionIndex: number
+      i2: number
     ) => {
-      // Check the cache
-
       // Key with higher number first
       const key = i1 > i2 ? i1 + "-" + i2 : i2 + "-" + i1;
 
@@ -130,10 +129,16 @@ export class Icosphere {
           .add(vertices[i2])
           .divideScalar(2);
 
+        // Divide to place it in a perfect sphere
         newVertex.divideScalar(newVertex.length() / 1.9);
 
+        // generate and add to the list of verticies
         const newLength = vertices.push(
-          Icosphere.calculateNoisedPosition(newVertex, startSeed, generationConfiguration)
+          Icosphere.calculateNoisedPosition(
+            newVertex,
+            startSeed,
+            generationConfiguration
+          )
         );
         // Map the key to the newly added index
         pointCache[key] = newLength - 1;
@@ -146,11 +151,11 @@ export class Icosphere {
     for (let i = 0; i < recursionLevel; i++) {
       const refinedIndices: Face3[] = [];
       indices.forEach((face: Face3) => {
-        // Replace with four faces
+        // Replace one face with four faces
 
-        const a = getMiddlePointIndex(face.a, face.b, i);
-        const b = getMiddlePointIndex(face.b, face.c, i);
-        const c = getMiddlePointIndex(face.c, face.a, i);
+        const a = getMiddlePointIndex(face.a, face.b);
+        const b = getMiddlePointIndex(face.b, face.c);
+        const c = getMiddlePointIndex(face.c, face.a);
 
         refinedIndices.push(new Face3(face.a, a, c));
         refinedIndices.push(new Face3(face.b, b, a));
@@ -160,8 +165,7 @@ export class Icosphere {
       indices = refinedIndices;
     }
 
-    console.log(logging);
-
+    // Define the geometry
     geometry.faces = indices;
     geometry.vertices = vertices;
     geometry.elementsNeedUpdate = true;

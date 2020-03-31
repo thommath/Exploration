@@ -1,5 +1,4 @@
-import { Geometry, Vector3, Face3, Object3D, Mesh, Material, MeshBasicMaterial, Camera, SphereGeometry, MeshPhongMaterial } from "three";
-import * as SimplexNoise from 'simplex-noise';
+import { Geometry, Vector3, Object3D, Mesh, Material, Camera, MeshPhongMaterial } from "three";
 import { Icosphere, GenerationConfig } from './Icosphere';
 
 
@@ -31,46 +30,31 @@ export class Planet extends Mesh{
     this.setRes(1);
 
     parent.add(this);
-
-    window.addEventListener("keypress", (e) => {
-      if (Number(e.key)) this.setRes(Number(e.key));
-    })
   }
 
   setRes(detailLevel: number) {
 
+    // Only update is resolution has changed
     if (detailLevel === this.lastRes) {
       return;
     } else {
       this.lastRes = detailLevel;
     }
-    console.log('New res!', detailLevel);
-    /*
-    this.geometry = new SphereGeometry(this.config.size, Math.max(16, detailLevel), Math.max(16, detailLevel));
-    this.geometry.translate(this.config.pos.x, this.config.pos.y, this.config.pos.z)
-    
-    const geometry = (<Geometry> this.geometry);
-    geometry.vertices.map(v => {
-      const norm = v.clone().sub(this.config.pos).normalize();
-      
-      for (let n = 1; n <= this.config.size; n++s) {
-        v.add(norm.multiplyScalar(randomVector(v.clone().multiplyScalar(n))).multiplyScalar(1/n))
-      }
-      //        .add(norm.multiplyScalar(randomVector(v.clone().multiplyScalar(3))).multiplyScalar(0.3));
-    });
-    this.geometry = new SphereGeometry(1, Math.max(16, detailLevel), Math.max(16, detailLevel));
-    */
+
+    // Get geometry object of the new resolution
     this.geometry = Icosphere.createGeometry(detailLevel, this.config.pos, this.config.generationConfig);
 
+    // Move and scale the planet
     this.geometry.scale(this.config.size || 1, this.config.size || 1, this.config.size || 1);
     this.geometry.translate(this.config.pos.x, this.config.pos.y, this.config.pos.z)
   }
   
+  /**
+   * Calculate the resolution based on distance from camera to the planet
+   * @param camera 
+   */
   update(camera: Camera) {
     const d = camera.position.distanceTo(this.config.pos) - this.config.size;
-
-    const maxDist = 120;
-    const divideBy = 4;
 
     const maxDetailLevel = 5;
 
@@ -95,6 +79,7 @@ export class Planet extends Mesh{
     /**
      
       Did not work well, let's try exponential
+      Exponential worked a lot better
 
      */
     const dx = 0.0001;
@@ -102,6 +87,5 @@ export class Planet extends Mesh{
 
     const res = Math.round(Math.max(Math.min(y,  maxDetailLevel), 1));
     this.setRes(res);
-    //    this.setRes(Math.max(Math.min(Math.floor((maxDist-d)/divideBy), maxDist/divideBy), 1));
   }
 }
