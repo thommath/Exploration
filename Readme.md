@@ -1,5 +1,24 @@
 # Exploration
 
+## Install
+
+### Requirements
+* nodejs
+* npm
+
+### Setup
+* Clone project
+* run `npm install`
+
+### Build
+* run `npm run build`
+
+## Run development server
+* run `npm run start`
+
+
+# Future plans
+
 ## How it works
 
 By using random 2d-something you generate a mesh, a very simple mesh like a single triangle in the far distance.
